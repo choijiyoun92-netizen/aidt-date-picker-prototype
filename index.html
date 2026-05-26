@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIDT 기간 조회 UI/UX 개선안</title>
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-2: #1d4ed8;
+      --sky: #eaf4ff;
+      --ink: #111827;
+      --muted: #6b7280;
+      --line: #dbe2ea;
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --soft: #f1f5f9;
+      --red: #ef4444;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 92px;
+    }
+
+    body {
+      margin: 0;
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 8px 18px rgba(37,99,235,0.25);
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .nav a {
+      padding: 9px 13px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 14px;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .nav a:hover { background: #eef2ff; color: var(--blue); }
+
+    .hero {
+      background: linear-gradient(135deg, #2f80ed 0%, #5a67f2 100%);
+      color: white;
+      padding: 72px 28px 84px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+    }
+
+    .hero::before { width: 280px; height: 280px; left: 8%; top: 36px; }
+    .hero::after { width: 420px; height: 420px; right: -120px; bottom: -180px; }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.24);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 20px 0 18px;
+      font-size: clamp(34px, 4vw, 56px);
+      line-height: 1.14;
+      letter-spacing: -0.06em;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: 18px;
+      color: rgba(255,255,255,0.88);
+      max-width: 720px;
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 24px 80px rgba(15,23,42,0.2);
+    }
+
+    .mini-screen {
+      background: white;
+      color: var(--ink);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .mini-head {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: #eef2f7;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+    }
+
+    .mini-filter {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 16px;
+      background: white;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .pill.active { background: #eff6ff; border-color: var(--blue); color: var(--blue); }
+
+    .date-input {
+      margin-left: auto;
+      min-width: 168px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      background: var(--blue);
+      color: white;
+      padding: 11px 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .metric {
+      background: white;
+      min-height: 150px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .metric b {
+      display: block;
+      margin-top: 28px;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 56px 28px 96px;
+    }
+
+    .section {
+      scroll-margin-top: 92px;
+      margin-top: 34px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(15,23,42,0.04);
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      font-size: 26px;
+      letter-spacing: -0.05em;
+    }
+
+    .section-desc {
+      margin: -8px 0 22px;
+      color: var(--muted);
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    .info-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    .info-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: -0.04em;
+    }
+
+    .info-card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .problem { border-left: 5px solid var(--red); }
+    .goal { border-left: 5px solid var(--green); }
+    .policy { border-left: 5px solid var(--blue); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #334155;
+      font-size: 14px;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .flow-step {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: linear-gradient(180deg, #fff, #f8fbff);
+      min-height: 168px;
+    }
+
+    .flow-step strong {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--blue);
+      color: #fff;
+      margin-bottom: 14px;
+    }
+
+    .flow-step h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .flow-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .prototype-wrap {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .mock-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .mock-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: #f1f4f8;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mock-toolbar .title {
+      font-weight: 900;
+      margin-right: auto;
+    }
+
+    .mock-body {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 22px;
+      min-height: 300px;
+    }
+
+    .mock-body > div {
+      border-right: 1px solid var(--line);
+      padding: 18px;
+      text-align: center;
+    }
+
+    .mock-body > div:last-child { border-right: 0; }
+
+    .mock-body span {
+      display: inline-grid;
+      place-items: center;
+      width: 72px;
+      height: 72px;
+      margin: 30px 0 18px;
+      border-radius: 22px;
+      background: #dcfce7;
+      font-size: 32px;
+    }
+
+    .mock-body b { font-size: 34px; }
+
+    .date-picker {
+      border: 1px solid #c7ceda;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 20px 50px rgba(15,23,42,0.14);
+      overflow: hidden;
+    }
+
+    .picker-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+
+    .picker-tabs button {
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      font-weight: 900;
+    }
+
+    .picker-tabs .selected {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: #eff6ff;
+    }
+
+    .picker-month {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 26px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .calendar-grid .head {
+      font-weight: 900;
+      color: #475569;
+    }
+
+    .calendar-grid div {
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+    }
+
+    .calendar-grid .muted { color: #94a3b8; }
+    .calendar-grid .range { background: #dbeafe; color: var(--blue-2); font-weight: 900; }
+    .calendar-grid .point { background: var(--blue); color: white; font-weight: 900; }
+
+    .picker-help {
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: #fbfdff;
+    }
+
+    .compact-preview {
+      max-width: 520px;
+      margin-left: auto;
+    }
+
+    .period-only-screen {
+      padding: 18px 0;
+    }
+
+    .period-only-filter {
+      align-items: center;
+      gap: 10px;
+    }
+
+    .single-line-period {
+      display: grid;
+      grid-template-columns: 76px 1fr 76px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .period-label {
+      display: flex;
+      align-items: center;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+    }
+
+    .large-date {
+      flex: 1;
+      min-width: 0;
+      height: 46px;
+      align-items: center;
+    }
+
+    .inline-picker {
+      width: calc(100% - 32px);
+      margin: 0 16px;
+      box-shadow: none;
+    }
+
+    .compact-calendar div {
+      height: 26px;
+    }
+
+    .period-prototype {
+  display: grid;
+  grid-template-columns: 540px 360px;
+  gap: 20px;
+  align-items: start;
+  justify-content: center;
+}
+
+    .period-search-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .period-search-head {
+      padding: 16px 18px;
+      background: #f1f4f8;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+    }
+
+    .period-search-body {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .period-search-inline {
+      display: grid;
+      grid-template-columns: 76px minmax(260px, 1fr) 76px;
+      gap: 10px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .period-search-inline .date-input {
+      white-space: nowrap;
+    }
+
+    .period-search-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: center;
+      font-weight: 800;
+    }
+
+    .period-search-row .date-input {
+      width: 100%;
+      margin-left: 0;
+      min-width: 0;
+    }
+
+    .period-search-card .btn {
+      width: 100%;
+      height: 46px;
+      font-size: 16px;
+      padding: 0 12px;
+    }
+
+    .demo-shell {
+      max-width: 760px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 16px 48px rgba(15,23,42,0.08);
+      overflow: visible;
+    }
+
+    .demo-toolbar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 80px minmax(260px, 1fr) 82px;
+  gap: 10px;
+  align-items: center;
+  padding: 18px;
+  background: #f1f4f8;
+  border-radius: 22px;
+}
+
+    .demo-label {
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .demo-date-button {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .demo-search-button {
+      height: 46px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .demo-picker {
+      position: absolute;
+      top: 74px;
+      right: 100px;
+      width: 360px;
+      border: 1px solid #c7ceda;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 18px 48px rgba(15,23,42,0.18);
+      z-index: 20;
+      overflow: hidden;
+    }
+
+    .demo-picker.hidden { display: none; }
+
+    .demo-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+
+    .demo-tabs button {
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .demo-tabs button.active {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: #eff6ff;
+    }
+
+    .demo-month {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+    }
+
+    .demo-month button {
+      border: 0;
+      background: transparent;
+      font-size: 24px;
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    .demo-calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .demo-calendar .dow {
+      height: 28px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #475569;
+    }
+
+    .demo-day {
+      height: 32px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .demo-day:hover { background: #eef2ff; }
+    .demo-day.muted { color: #94a3b8; }
+    .demo-day.disabled { color: #cbd5e1; cursor: not-allowed; }
+    .demo-day.in-range { background: #dbeafe; color: var(--blue-2); }
+    .demo-day.selected { background: var(--blue); color: #fff; }
+
+    .demo-help {
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      background: #fbfdff;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .demo-result {
+      padding: 18px;
+      color: #334155;
+      font-weight: 800;
+    }
+
+    .code-box {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 18px;
+      padding: 20px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .check-list li {
+  min-height: 58px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.check-list li::before {
+  content: "✓";
+  flex: 0 0 22px;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #047857;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+    .scope-thumb {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.scope-thumb:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.scope-thumb img {
+  display: block;
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.scope-thumb-caption {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+  background: #fff;
+}
+
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(15, 23, 42, 0.68);
+}
+
+.image-modal.active {
+  display: flex;
+}
+
+.image-modal-content {
+  position: relative;
+  width: min(1120px, 92vw);
+  max-height: 88vh;
+  border-radius: 20px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.image-modal-head {
+  height: 56px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  font-weight: 900;
+}
+
+.image-modal-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.image-modal-body {
+  padding: 16px;
+  background: #f8fafc;
+  overflow: auto;
+  max-height: calc(88vh - 56px);
+}
+
+.image-modal-body img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+    .footer {
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-inner,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .flow,
+      .prototype-wrap,
+      .period-prototype {
+        grid-template-columns: 1fr;
+      }
+      .nav { display: none; }
+      .mock-toolbar { flex-wrap: wrap; }
+      .mock-body { grid-template-columns: 1fr; }
+      .mock-body > div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .mock-body > div:last-child { border-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">AI</div>
+      <span>AIDT 기간 조회 UI/UX 개선안</span>
+    </div>
+    <nav class="nav">
+      <a href="#background">배경</a>
+      <a href="#scope">적용 범위</a>
+      <a href="#proposal">개선안</a>
+      <a href="#prototype">화면안</a>
+      <a href="#calendar-prototype">프로토타입</a>
+      </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <span class="eyebrow">AIDT 기간 조회 UI/UX 개선</span>
+        <h1>고정 기간 선택에서<br />사용자 의도 기반 기간 선택으로</h1>
+        <p>
+          1주·1개월 조회 시 일~토, 월 단위로 고정되는 문제를 개선하고,
+          1일 / 1주 / 1개월 / 직접 설정이 하나의 일관된 캘린더 UI 안에서 동작하도록 정리한 기획안
+        </p>
+      </div>
+      <div class="hero-card compact-preview">
+        <div class="mini-screen period-only-screen">
+          <div class="mini-filter period-only-filter single-line-period">
+            <span class="period-label">학습 기간</span>
+            <span class="date-input large-date">2026.05.26 <span>📅</span></span>
+            <button class="btn">조회</button>
+          </div>
+          <div class="date-picker inline-picker">
+            <div class="picker-tabs">
+              <button class="selected">1일</button>
+              <button>1주</button>
+              <button>1개월</button>
+              <button>직접 설정</button>
+            </div>
+            <div class="picker-month">‹ <span>2026년 5월</span> ›</div>
+            <div class="calendar-grid compact-calendar">
+              <div class="head">일</div><div class="head">월</div><div class="head">화</div><div class="head">수</div><div class="head">목</div><div class="head">금</div><div class="head">토</div>
+              <div class="muted">26</div><div class="muted">27</div><div class="muted">28</div><div class="muted">29</div><div>30</div><div>1</div><div>2</div>
+              <div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div>
+              <div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div>16</div>
+              <div>17</div><div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div>23</div>
+              <div>24</div><div>25</div><div class="point">26</div><div>27</div><div>28</div><div>29</div><div>30</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <section id="background" class="section">
+      <h2 class="section-title">1. 개선 배경</h2>
+      <p class="section-desc">현재 학습 기간 조회 기능은 옵션은 제공하지만, 실제 선택 범위가 사용자의 의도와 다르게 고정되는 문제가 있음</p>
+      <div class="grid-3">
+        <div class="info-card problem">
+          <span class="tag">AS-IS 문제 01</span>
+          <h3>1주 선택 시 주 단위 고정</h3>
+          <p>과거 주 선택 시 일~토 기준으로 고정되고, 현재 주 선택 시 일~현재 요일로 고정됨</p>
+        </div>
+        <div class="info-card problem">
+          <span class="tag">AS-IS 문제 02</span>
+          <h3>1개월 선택 시 월 단위 고정</h3>
+          <p>월 리스트 방식으로 선택되어 특정 기준일 기준의 최근 1개월 조회가 어려움</p>
+        </div>
+        <div class="info-card problem">
+          <span class="tag">AS-IS 문제 03</span>
+          <h3>옵션별 UI 구조 상이</h3>
+          <p>1일/1주는 캘린더형, 1개월은 월 리스트형으로 제공되어 사용 흐름이 끊김</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">2. 개선 목표</h2>
+      <div class="grid-4">
+        <div class="info-card goal">
+          <h3>기간 선택 자유도 개선</h3>
+          <p>사용자가 원하는 기준일 또는 기간 범위를 선택할 수 있도록 개선</p>
+        </div>
+        <div class="info-card goal">
+          <h3>UI 일관성 확보</h3>
+          <p>모든 옵션을 동일한 캘린더 팝업 구조 안에서 제공</p>
+        </div>
+        <div class="info-card goal">
+          <h3>조회 조건 명확화</h3>
+          <p>입력창에 실제 조회 기간을 명확한 날짜 범위로 표시</p>
+        </div>
+        <div class="info-card goal">
+          <h3>분석 신뢰도 향상</h3>
+          <p>사용자가 의도한 기간의 학습 데이터를 정확히 확인할 수 있게 함</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="scope" class="section">
+  <h2 class="section-title">3. 적용 범위</h2>
+  <p class="section-desc">
+    본 개선안은 AI 분석 내 기간 조회 UI가 적용되어 있는 교사/학생 화면을 대상으로 함.
+    동일한 기간 선택 정책을 적용하여 메뉴 간 사용성을 일관되게 맞춤
+  </p>
+
+  <div class="grid-3">
+    <div class="info-card policy">
+      <span class="tag">교사</span>
+      <h3>AI 분석 &gt; 학급 분석 &gt; 학습 요약</h3>
+      <p>
+        학급 단위 학습 요약 데이터를 조회하는 기간 선택 영역에 개선된 캘린더 UI/UX 적용
+      </p>
+
+      <div
+        class="scope-thumb"
+        data-modal-image="./assets/scope-01-learning-summary-teacher.png"
+        data-modal-title="[교사] AI 분석 &gt; 학급 분석 &gt; 학습 요약"
+      >
+        <img src="./assets/scope-01-learning-summary-teacher.png" alt="[교사] 학급 분석 학습 요약 화면" />
+        <div class="scope-thumb-caption">이미지 클릭 시 확대</div>
+      </div>
+    </div>
+
+    <div class="info-card policy">
+      <span class="tag">교사</span>
+      <h3>AI 분석 &gt; 학급 분석 &gt; 학생 분포</h3>
+      <p>
+        학생 분포 데이터를 확인하는 기간 조회 영역에 동일한 기간 선택 정책 적용
+      </p>
+
+      <div
+        class="scope-thumb"
+        data-modal-image="./assets/scope-02-student-distribution-teacher.png"
+        data-modal-title="[교사] AI 분석 &gt; 학급 분석 &gt; 학생 분포"
+      >
+        <img src="./assets/scope-02-student-distribution-teacher.png" alt="[교사] 학급 분석 학생 분포 화면" />
+        <div class="scope-thumb-caption">이미지 클릭 시 확대</div>
+      </div>
+    </div>
+
+    <div class="info-card policy">
+      <span class="tag">학생</span>
+      <h3>AI 분석 &gt; 학습 분석 &gt; 학습 요약</h3>
+      <p>
+        학생 개인의 학습 요약 데이터를 조회하는 기간 선택 영역에 개선된 캘린더 UI/UX 적용
+      </p>
+
+      <div
+        class="scope-thumb"
+        data-modal-image="./assets/scope-03-learning-summary-student.png"
+        data-modal-title="[학생] AI 분석 &gt; 학습 분석 &gt; 학습 요약"
+      >
+        <img src="./assets/scope-03-learning-summary-student.png" alt="[학생] 학습 분석 학습 요약 화면" />
+        <div class="scope-thumb-caption">이미지 클릭 시 확대</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <section id="proposal" class="section">
+      <h2 class="section-title">4. TO-BE 기간 옵션 정의</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>옵션</th>
+            <th>선택 방식</th>
+            <th>조회 범위</th>
+            <th>입력창 표시 예시</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1일</strong></td>
+            <td>날짜 1개 선택</td>
+            <td>선택한 하루</td>
+            <td>2026.05.26</td>
+          </tr>
+          <tr>
+            <td><strong>1주</strong></td>
+            <td>기준일 1개 선택</td>
+            <td>선택일 포함 최근 7일</td>
+            <td>2026.05.20 ~ 2026.05.26</td>
+          </tr>
+          <tr>
+            <td><strong>1개월</strong></td>
+            <td>기준일 1개 선택</td>
+            <td>선택일 포함 최근 1개월</td>
+            <td>2026.04.27 ~ 2026.05.26</td>
+          </tr>
+          <tr>
+            <td><strong>직접 설정</strong></td>
+            <td>시작일 → 종료일 순서 선택</td>
+            <td>사용자가 지정한 기간</td>
+            <td>2026.05.10 ~ 2026.05.26</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">5. 사용자 흐름</h2>
+      <div class="flow">
+        <div class="flow-step">
+          <strong>1</strong>
+          <h3>기본값 노출</h3>
+          <p>최초 진입 시 현재 시점의 월이 기본 선택됨. 현재 월이 끝나지 않았다면 실제 조회 범위를 함께 표시하는 방식</p>
+        </div>
+        <div class="flow-step">
+          <strong>2</strong>
+          <h3>캘린더 열기</h3>
+          <p>캘린더 아이콘 또는 날짜 입력 영역 클릭 시 기간 선택 팝업이 열림</p>
+        </div>
+        <div class="flow-step">
+          <strong>3</strong>
+          <h3>옵션 선택</h3>
+          <p>1일 / 1주 / 1개월 / 직접 설정 중 원하는 조회 방식을 선택</p>
+        </div>
+        <div class="flow-step">
+          <strong>4</strong>
+          <h3>조회 실행</h3>
+          <p>선택된 기간이 입력창에 반영되고, 조회 버튼 클릭 시 해당 범위의 학습 분석 데이터가 갱신됨</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="prototype" class="section">
+      <h2 class="section-title">6. 웹 화면 기획안</h2>
+      <p class="section-desc">예시 화면에서는 학습 요약 지표나 다른 필터를 제외하고, 기간 조회 영역과 캘린더만 남겨 핵심 동작을 보임</p>
+      <div class="period-prototype">
+        <div class="period-search-card">
+          <div class="period-search-head">학습 기간 조회</div>
+          <div class="period-search-body">
+            <div class="period-search-inline">
+              <span class="period-label">학습 기간</span>
+              <span class="date-input">2026.05.20 ~ 2026.05.26 <span>📅</span></span>
+              <button class="btn">조회</button>
+            </div>
+            <div class="info-card policy" style="margin-top:6px;">
+              <h3>조회 영역 구성</h3>
+              <p>화면 상단에는 학습 기간 입력 영역과 조회 버튼만 배치하였음. 실제 학습 요약 지표는 조회 결과 영역에서 별도로 노출</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="date-picker">
+          <div class="picker-tabs">
+            <button>1일</button>
+            <button class="selected">1주</button>
+            <button>1개월</button>
+            <button>직접 설정</button>
+          </div>
+          <div class="picker-month">‹ <span>2026년 5월</span> ›</div>
+          <div class="calendar-grid">
+            <div class="head">일</div><div class="head">월</div><div class="head">화</div><div class="head">수</div><div class="head">목</div><div class="head">금</div><div class="head">토</div>
+            <div class="muted">26</div><div class="muted">27</div><div class="muted">28</div><div class="muted">29</div><div>1</div><div>2</div><div>3</div>
+            <div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div>
+            <div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div>
+            <div>18</div><div>19</div><div class="point">20</div><div class="range">21</div><div class="range">22</div><div class="range">23</div><div class="range">24</div>
+            <div class="range">25</div><div class="point">26</div><div>27</div><div>28</div><div>29</div><div>30</div><div>31</div>
+          </div>
+          <div class="picker-help">선택한 날짜 기준 최근 7일이 선택됩니다.</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">7. 정책 및 예외 처리</h2>
+      <div class="grid-2">
+        <ul class="check-list">
+          <li>미래 날짜는 선택할 수 없음</li>
+          <li>직접 설정에서 종료일은 시작일보다 이전으로 선택할 수 없음</li>
+          <li>직접 설정에서 시작일 이후 더 이른 날짜를 클릭하면 시작일을 재선택한 것으로 처리</li>
+          <li>조회 가능 최대 기간이 필요하다면 직접 설정에 최대 N개월 제한 적용(개발 확인 필요)</li>
+        </ul>
+        <ul class="check-list">
+          <li>입력창에는 실제 조회 범위 표시</li>
+          <li>1주/1개월은 기준일 선택 후 자동으로 기간 범위 하이라이트</li>
+          <li>기본값은 현재 월로 유지하되, 현재 월의 실제 조회 범위 표기</li>
+          <li>옵션 변경 시 기존 선택값은 해당 옵션의 정책에 맞게 자동 재계산</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="calendar-prototype" class="section">
+      <h2 class="section-title">8. 동작형 캘린더 프로토타입</h2>
+      <p class="section-desc">기획안에서 정의한 기간 선택 정책을 실제로 클릭해볼 수 있는 예시 화면</p>
+
+      <div class="demo-shell">
+        <div class="demo-toolbar">
+          <span class="demo-label">학습 기간</span>
+          <button id="demoDateButton" class="demo-date-button" type="button">
+            <span id="demoDateText">2026.05.01 ~ 2026.05.26</span>
+            <span>📅</span>
+          </button>
+          <button id="demoSearchButton" class="demo-search-button" type="button">조회</button>
+
+          <div id="demoPicker" class="demo-picker hidden">
+            <div class="demo-tabs">
+              <button type="button" data-mode="day">1일</button>
+              <button type="button" data-mode="week">1주</button>
+              <button type="button" data-mode="month" class="active">1개월</button>
+              <button type="button" data-mode="custom">직접 설정</button>
+            </div>
+            <div class="demo-month">
+              <button id="demoPrevMonth" type="button">‹</button>
+              <span id="demoMonthLabel">2026년 5월</span>
+              <button id="demoNextMonth" type="button">›</button>
+            </div>
+            <div id="demoCalendar" class="demo-calendar"></div>
+            <div id="demoHelp" class="demo-help">선택한 날짜 기준 최근 1개월이 선택됩니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="imageModal" class="image-modal" aria-hidden="true">
+  <div class="image-modal-content">
+    <div class="image-modal-head">
+      <span id="imageModalTitle">화면 예시</span>
+      <button id="imageModalClose" class="image-modal-close" type="button" aria-label="닫기">×</button>
+    </div>
+    <div class="image-modal-body">
+      <img id="imageModalImg" src="" alt="확대 이미지" />
+    </div>
+  </div>
+</div>
+
+  <script>
+    const demoToday = new Date(2026, 4, 26);
+    let demoViewDate = new Date(2026, 4, 1);
+    let demoMode = 'month';
+    let demoStart = new Date(2026, 4, 1);
+    let demoEnd = new Date(2026, 4, 26);
+    let demoCustomStep = 'start';
+
+    const demoDateButton = document.getElementById('demoDateButton');
+    const demoDateText = document.getElementById('demoDateText');
+    const demoSearchButton = document.getElementById('demoSearchButton');
+    const demoPicker = document.getElementById('demoPicker');
+    const demoCalendar = document.getElementById('demoCalendar');
+    const demoMonthLabel = document.getElementById('demoMonthLabel');
+    const demoHelp = document.getElementById('demoHelp');
+    const demoTabButtons = document.querySelectorAll('.demo-tabs button');
+
+    demoDateButton.addEventListener('click', () => {
+      demoPicker.classList.toggle('hidden');
+      renderDemoCalendar();
+    });
+
+    demoSearchButton.addEventListener('click', () => {
+      demoPicker.classList.add('hidden');
+    });
+
+    demoTabButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        demoTabButtons.forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        demoMode = button.dataset.mode;
+        demoCustomStep = 'start';
+        applyDemoModeToCurrentSelection();
+        demoDateText.textContent = formatDemoRange(demoStart, demoEnd);
+        demoHelp.textContent = getDemoHelp();
+        renderDemoCalendar();
+      });
+    });
+
+    document.getElementById('demoPrevMonth').addEventListener('click', () => {
+      demoViewDate.setMonth(demoViewDate.getMonth() - 1);
+      renderDemoCalendar();
+    });
+
+    document.getElementById('demoNextMonth').addEventListener('click', () => {
+      demoViewDate.setMonth(demoViewDate.getMonth() + 1);
+      renderDemoCalendar();
+    });
+
+    function renderDemoCalendar() {
+      demoCalendar.innerHTML = '';
+      const year = demoViewDate.getFullYear();
+      const month = demoViewDate.getMonth();
+      demoMonthLabel.textContent = `${year}년 ${month + 1}월`;
+
+      ['일', '월', '화', '수', '목', '금', '토'].forEach((label) => {
+        const item = document.createElement('div');
+        item.className = 'dow';
+        item.textContent = label;
+        demoCalendar.appendChild(item);
+      });
+
+      const firstDay = new Date(year, month, 1);
+      const startOffset = firstDay.getDay();
+      const gridStart = new Date(year, month, 1 - startOffset);
+
+      for (let i = 0; i < 42; i++) {
+        const date = new Date(gridStart);
+        date.setDate(gridStart.getDate() + i);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'demo-day';
+        button.textContent = date.getDate();
+
+        if (date.getMonth() !== month) button.classList.add('muted');
+        if (isAfterDemo(date, demoToday)) {
+          button.classList.add('disabled');
+          button.disabled = true;
+        }
+
+        if (isSameDemoDate(date, demoStart) || isSameDemoDate(date, demoEnd)) {
+          button.classList.add('selected');
+        } else if (isBetweenDemo(date, demoStart, demoEnd)) {
+          button.classList.add('in-range');
+        }
+
+        button.addEventListener('click', () => selectDemoDate(date));
+        demoCalendar.appendChild(button);
+      }
+    }
+
+    function applyDemoModeToCurrentSelection() {
+      const basisDate = demoEnd && !isAfterDemo(demoEnd, demoToday) ? demoEnd : demoToday;
+
+      if (demoMode === 'day') {
+        demoStart = basisDate;
+        demoEnd = basisDate;
+      }
+
+      if (demoMode === 'week') {
+        demoEnd = basisDate;
+        demoStart = addDemoDays(basisDate, -6);
+      }
+
+      if (demoMode === 'month') {
+        demoEnd = basisDate;
+        demoStart = addDemoDays(addDemoMonths(basisDate, -1), 1);
+      }
+
+      if (demoMode === 'custom') {
+        demoStart = basisDate;
+        demoEnd = basisDate;
+      }
+    }
+
+    function selectDemoDate(date) {
+      if (demoMode === 'day') {
+        demoStart = date;
+        demoEnd = date;
+      }
+
+      if (demoMode === 'week') {
+        demoEnd = date;
+        demoStart = addDemoDays(date, -6);
+      }
+
+      if (demoMode === 'month') {
+        demoEnd = date;
+        demoStart = addDemoDays(addDemoMonths(date, -1), 1);
+      }
+
+      if (demoMode === 'custom') {
+        if (demoCustomStep === 'start') {
+          demoStart = date;
+          demoEnd = date;
+          demoCustomStep = 'end';
+          demoHelp.textContent = '종료일을 선택해 주세요.';
+        } else {
+          if (date.getTime() < demoStart.getTime()) {
+            demoEnd = demoStart;
+            demoStart = date;
+          } else {
+            demoEnd = date;
+          }
+          demoCustomStep = 'start';
+          demoHelp.textContent = '직접 설정 기간이 선택되었습니다.';
+        }
+      }
+
+      demoDateText.textContent = formatDemoRange(demoStart, demoEnd);
+      renderDemoCalendar();
+    }
+
+    function getDemoHelp() {
+      if (demoMode === 'day') return '조회할 날짜를 선택해 주세요.';
+      if (demoMode === 'week') return '선택한 날짜 기준 최근 7일이 선택됩니다.';
+      if (demoMode === 'month') return '선택한 날짜 기준 최근 1개월이 선택됩니다.';
+      return '시작일과 종료일을 순서대로 선택해 주세요.';
+    }
+
+    function formatDemoDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}.${m}.${d}`;
+    }
+
+    function formatDemoRange(start, end) {
+      if (isSameDemoDate(start, end)) return formatDemoDate(start);
+      return `${formatDemoDate(start)} ~ ${formatDemoDate(end)}`;
+    }
+
+    function addDemoDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function addDemoMonths(date, months) {
+      const result = new Date(date);
+      result.setMonth(result.getMonth() + months);
+      return result;
+    }
+
+    function isSameDemoDate(a, b) {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    function isAfterDemo(a, b) {
+      return a.getTime() > b.getTime();
+    }
+
+    function isBetweenDemo(date, start, end) {
+      return date.getTime() > start.getTime() && date.getTime() < end.getTime();
+    }
+
+    renderDemoCalendar();
+
+    const imageModal = document.getElementById('imageModal');
+const imageModalImg = document.getElementById('imageModalImg');
+const imageModalTitle = document.getElementById('imageModalTitle');
+const imageModalClose = document.getElementById('imageModalClose');
+
+document.querySelectorAll('.scope-thumb').forEach((thumb) => {
+  thumb.addEventListener('click', () => {
+    const imageSrc = thumb.dataset.modalImage;
+    const imageTitle = thumb.dataset.modalTitle;
+
+    imageModalImg.src = imageSrc;
+    imageModalTitle.innerHTML = imageTitle;
+    imageModal.classList.add('active');
+    imageModal.setAttribute('aria-hidden', 'false');
+  });
+});
+
+function closeImageModal() {
+  imageModal.classList.remove('active');
+  imageModal.setAttribute('aria-hidden', 'true');
+  imageModalImg.src = '';
+}
+
+imageModalClose.addEventListener('click', closeImageModal);
+
+imageModal.addEventListener('click', (event) => {
+  if (event.target === imageModal) {
+    closeImageModal();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && imageModal.classList.contains('active')) {
+    closeImageModal();
+  }
+});
+  </script>
+
+  <footer class="footer">AIDT 학급 분석 기간 조회 UI/UX 개선안 · 에듀테크플랫폼서비스운영Cell 최지연CP</footer>
+</body>
+</html>
